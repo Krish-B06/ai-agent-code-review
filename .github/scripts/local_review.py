@@ -56,6 +56,33 @@ def get_surrounding_tests(modified_files):
                         print(f"Error reading test file {test_path}: {e}")
     return surrounding_content
 
+def run_local_tests():
+    print("🧪 Running local test suite to capture runtime feedback...")
+    try:
+        result = subprocess.run(["pytest"], capture_output=True, text=True, timeout=30)
+        output = result.stdout + "\n" + result.stderr
+        
+        if result.returncode == 0:
+            print("✅ All local tests passed!")
+            return "\n=== Runtime Context: Test Suite Results ===\nAll tests passed successfully.\n"
+        else:
+            print("⚠️ Some local tests failed! Capturing tracebacks for the AI...")
+            return f"\n=== Runtime Context: Test Suite Failures ===\n{output}\n"
+    except FileNotFoundError:
+        try:
+            result = subprocess.run(["python", "-m", "unittest", "discover", "-s", "tests"], capture_output=True, text=True, timeout=30)
+            output = result.stdout + "\n" + result.stderr
+            if result.returncode == 0:
+                print("✅ All local tests passed (unittest)!")
+                return "\n=== Runtime Context: Test Suite Results ===\nAll tests passed successfully.\n"
+            else:
+                print("⚠️ Some local tests failed (unittest)! Capturing tracebacks...")
+                return f"\n=== Runtime Context: Test Suite Failures ===\n{output}\n"
+        except Exception as e:
+            return f"\n=== Runtime Context: Test Suite Status ===\nCould not execute test suite: {e}\n"
+    except Exception as e:
+        return f"\n=== Runtime Context: Test Suite Status ===\nError running tests: {e}\n"
+
 def get_gh_token():
     try:
         token = subprocess.check_output(["gh", "auth", "token"], text=True).strip()
@@ -63,6 +90,20 @@ def get_gh_token():
     except Exception as e:
         print("Error: Could not retrieve GitHub token. Ensure you are logged in via 'gh auth login'.")
         sys.exit(1)
+
+def post_to_github_pr():
+    print("💬 Checking for an active Pull Request on GitHub...")
+    try:
+        # Check if there is an active open PR for the current branch
+        subprocess.check_output(["gh", "pr", "view", "--json", "number"], text=True)
+        
+        print("📤 Posting the review report as a comment on your PR...")
+        subprocess.run(["gh", "pr", "comment", "-F", "review_report.md"], check=True)
+        print("🎉 Success! Review comment posted directly to your Pull Request on GitHub.")
+    except subprocess.CalledProcessError:
+        print("ℹ️ Note: No open Pull Request found for this branch on GitHub yet.")
+        print("💡 Tip: Once you open a Pull Request, you can automatically post this report using:")
+        print("   gh pr comment -F review_report.md")
 
 def main():
     print("🔄 Local Review Agent: Fetching local session...")
@@ -74,8 +115,11 @@ def main():
         print("⚠️ No functional application changes found to review.")
         sys.exit(0)
 
-    # Automatically fetch associated test files to inject context
+    # 1. Fetch associated test files to inject static context
     test_context = get_surrounding_tests(modified_files)
+
+    # 2. Run local tests to inject dynamic execution feedback
+    test_results = run_local_tests()
 
     # Read instructions and prompt files
     instructions_path = ".github/copilot-instructions.md"
@@ -117,13 +161,13 @@ def main():
     base_api_url = endpoints.get("api", "https://api.githubcopilot.com")
     completions_url = f"{base_api_url}/chat/completions"
 
-    print("🧠 Sending diff and surrounding context to Copilot...")
+    print("🧠 Sending diff, context, and test results to Copilot...")
     
     payload = {
         "model": "gpt-4o",
         "messages": [
             {"role": "system", "content": f"You are a Senior Staff Engineer. Follow these system instructions for code reviews:\n{instructions}"},
-            {"role": "user", "content": f"Perform a code review on the following git diff, keeping in mind the provided surrounding test context to identify regressions. Follow the requested template guidelines.\n\nTemplate Guidelines:\n{prompt_template}\n\nGit Diff:\n{pr_diff}\n\n{test_context}"}
+            {"role": "user", "content": f"Perform a code review on the following git diff, leveraging both the surrounding test file context and the actual local test suite execution results to identify regressions. Follow the requested template guidelines.\n\nTemplate Guidelines:\n{prompt_template}\n\nGit Diff:\n{pr_diff}\n\n{test_context}\n\n{test_results}"}
         ],
         "temperature": 0.1
     }
@@ -147,6 +191,9 @@ def main():
         f.write(review_content)
         
     print(f"\n🎉 Success! Standardized review output saved to '{output_file}'\n")
+
+    # Automatically post review to active GitHub PR if available
+    post_to_github_pr()
 
 if __name__ == "__main__":
     main()
