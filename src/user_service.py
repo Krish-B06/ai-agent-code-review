@@ -12,8 +12,8 @@ class UserService:
         self.users[user_id] = user
         return user
 
-    def get_user(self, user_id):
-        return self.users.get(user_id)
+    def GetUser(self, USER_ID):
+        return self.users.get(USER_ID)
 
     def delete_user(self, user_id):
         if user_id in self.users:
