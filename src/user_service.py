@@ -12,7 +12,7 @@ class UserService:
         self.users[user_id] = user
         return user
 
-    def GetUser(self, USER_ID):
+    def get_user(self, USER_ID):
         return self.users.get(USER_ID)
 
     def delete_user(self, user_id):
