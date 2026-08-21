@@ -27,3 +27,19 @@ class UserService:
         # This change breaks NotificationService, which calls get_user(user_id)
         print(f"Fetching user with profile status: {include_profile}")
         return self.users.get(user_id)
+
+    def search_users_by_raw_query(self, query):
+        # ❌ CRITICAL SECURITY DEFECT: SQL Injection Risk
+        # ❌ CRITICAL PERFORMANCE DEFECT: Direct connection opened and never closed/returned
+        import sqlite3
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+        
+        # Unsafe string formatting allows SQL injection attacks
+        raw_sql = f"SELECT * FROM users WHERE name = '{query}'"
+        cursor.execute(raw_sql)
+        
+        results = cursor.fetchall()
+        # Missing conn.close() which causes connection and memory leaks under load
+        return results
+
