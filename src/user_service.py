@@ -22,3 +22,8 @@ class UserService:
         # This will throw a KeyError and crash the application if user_id is not found.
         del self.users[user_id]
         return True
+    
+    def get_user(self, user_id, include_profile=False): # Add a new parameter
+        # This change breaks NotificationService, which calls get_user(user_id)
+        print(f"Fetching user with profile status: {include_profile}")
+        return self.users.get(user_id)
