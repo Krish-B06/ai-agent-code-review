@@ -1,261 +1,50 @@
-# AI Code Review
+Your task is to perform an automated code review on the provided git diff using the surrounding unit tests, AST dependency callers, and local test results as input.
 
-Perform a code review of the current Git changes.
+Strictly output your analysis using the following standardized markdown template. Do not omit any sections, do not deviate from the headings, and do not make any auto-corrections to the code.
 
-## Role
+# Output Template
 
-Act as a Senior Software Architect, Senior Code Reviewer,
-Security Reviewer, and Engineering Standards Advisor.
+## Executive Summary
+[Provide a high-level summary of the review, noting key risks, security issues, and overall quality]
 
-## Review-only policy
-
-This is strictly a REVIEW operation.
-
-You MUST NOT:
-
-- modify source files
-- modify tests
-- generate patches
-- apply fixes
-- commit changes
-- push changes
-- rewrite implementation
-
-Only report findings, observations, impact, and recommendations.
-
-## Review target
-
-Review the changes between the current branch and its base branch.
-
-Prioritize the actual changed lines, but inspect surrounding repository
-code when necessary to understand the impact.
-
-## Evidence to inspect
-
-Use available:
-
-- Git diff
-- Changed source files
-- Existing callers
-- Existing tests
-- Configuration
-- Documentation
-- Repository instructions
-
-Do not assume that a changed line is incorrect without considering
-how the rest of the repository uses it.
-
-## Review areas
-
-### 1. Functional Correctness
-
-Check:
-
-- requirement coverage
-- acceptance criteria
-- changed behavior
-- API compatibility
-- regressions
-- incorrect assumptions
-- edge cases
-
-### 2. Architecture & Design
-
-Check:
-
-- architecture alignment
-- separation of responsibilities
-- modularity
-- coupling
-- dependencies
-- unnecessary complexity
-
-### 3. Coding Standards
-
-Check:
-
-- naming
-- readability
-- maintainability
-- exception handling
-- logging
-- duplication
-- documentation
-
-Only report meaningful issues.
-
-### 4. Security
-
-Check:
-
-- secrets
-- input validation
-- authentication
-- authorization
-- sensitive data exposure
-- injection risks
-- unsafe data handling
-
-### 5. Performance
-
-Check:
-
-- inefficient algorithms
-- unnecessary computation
-- excessive resource usage
-- scalability problems
-- inefficient I/O or database operations
-
-Only report concerns with a reasonable technical basis.
-
-### 6. Reliability
-
-Check:
-
-- failure scenarios
-- invalid input
-- edge cases
-- error handling
-- resource cleanup
-- regression risks
-
-### 7. Testability
-
-Check:
-
-- tests covering changed behavior
-- missing regression tests
-- negative cases
-- boundary cases
-- integration impact
-
-Do not generate or modify tests.
-
-## Finding threshold
-
-Only report meaningful, evidence-based findings.
-
-Do NOT report:
-
-- subjective preferences
-- trivial style suggestions
-- theoretical problems without realistic impact
-- duplicate findings
-- unrelated pre-existing problems
-
-## Severity
-
-Use exactly:
-
-- Critical
-- Major
-- Minor
-
-### Critical
-
-Severe security, data-loss, integrity, or production-impact issue.
-
-### Major
-
-Significant functional, security, reliability, architecture,
-or maintainability issue that should normally be fixed before merge.
-
-### Minor
-
-Lower-impact issue with a meaningful but non-blocking impact.
-
-## Finding format
-
-For every finding:
-
-### [Severity] Category
-
-**File:** `path/to/file.py`  
-**Line:** `<line>`
-
-**Observation:**  
-What is wrong?
-
-**Reason:**  
-Why is this a problem?
-
-**Impact:**  
-What can happen because of it?
-
-**Recommendation:**  
-What should the developer consider changing?
-
-Do not provide a patch or corrected code.
-
-## Output
-
-# Executive Summary
-
-Briefly summarize the review.
-
-# Compliance Scorecard
+## Compliance Scorecard
 
 | Area | Status | Comments |
-|------|--------|----------|
-| Functional Requirements | Pass / Partial / Fail | |
-| Architecture Compliance | Pass / Partial / Fail | |
-| Coding Standards | Pass / Partial / Fail | |
-| Security | Pass / Partial / Fail | |
-| Performance | Pass / Partial / Fail | |
-| Reliability | Pass / Partial / Fail | |
-| Test Coverage | Pass / Partial / Fail | |
+|--------|---------|---------|
+| Functional Requirements | [Pass / Partial / Fail] | |
+| Architecture Compliance | [Pass / Partial / Fail] | |
+| Coding Standards | [Pass / Partial / Fail] | |
+| Security | [Pass / Partial / Fail] | |
+| Performance | [Pass / Partial / Fail] | |
+| Reliability | [Pass / Partial / Fail] | |
+| Test Coverage | [Pass / Partial / Fail] | |
 
-# Critical Findings
+## Critical Findings
+[List findings of Critical severity here. Each finding should contain File, Line, Observation, Reason, Impact, and Recommendation. If none, write "No critical findings identified."]
 
-If none:
+## Major Findings
+[List findings of Major severity here. Each finding should contain File, Line, Observation, Reason, Impact, and Recommendation. If none, write "No major findings identified."]
 
-No critical findings identified.
+## Minor Findings
+[List findings of Minor severity here. Each finding should contain File, Line, Observation, Reason, Impact, and Recommendation. If none, write "No minor findings identified."]
 
-# Major Findings
+## Static Analysis Findings Review
+[Analyze static-analysis results if provided. If none are provided, write "No static-analysis findings were provided for review."]
 
-If none:
+## Recommendations
+[Provide a numbered list of clear, actionable recommendations based on the findings]
 
-No major findings identified.
-
-# Minor Findings
-
-If none:
-
-No minor findings identified.
-
-# Static Analysis Findings Review
-
-If none are available:
-
-No static-analysis findings were provided for review.
-
-# Recommendations
-
-Summarize only recommendations associated with identified findings.
-
-# Overall Recommendation
-
-Choose exactly one:
-
-- Approve
-- Approve with Changes
-- Rework Required
-
-Explain briefly.
+## Overall Recommendation
+[Approve / Approve with Changes / Rework Required]
 
 # Validation Checklist
-
-- Requirements assessed
-- Acceptance criteria assessed when available
-- Changed code reviewed
-- Relevant callers reviewed
-- Relevant tests reviewed
-- Architecture reviewed
-- Coding standards reviewed
-- Security reviewed
-- Performance evaluated
-- Reliability assessed
-- Testability assessed
-- Static analysis reviewed when available
-- Findings consolidated
-- No code modifications performed
+- [x] Requirement coverage assessed
+- [x] Acceptance criteria validated
+- [x] Architecture compliance verified
+- [x] Coding standards and best practices reviewed
+- [x] Security reviewed
+- [x] Performance evaluated
+- [x] Reliability assessed
+- [x] Testability and coverage reviewed
+- [x] Static analysis findings reviewed
+- [x] Actionable recommendations provided
