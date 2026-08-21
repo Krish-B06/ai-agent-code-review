@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: copilot-review-v2
+        name: Copilot V2 AST Code Review
+        entry: python .github/scripts/local_review.py
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
