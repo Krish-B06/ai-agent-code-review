@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+review_report.md
+review_input.md
+
 # C extensions
 *.so
 
