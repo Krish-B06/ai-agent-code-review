@@ -1,10 +1,11 @@
+import sqlite3
+
 class UserService:
     def __init__(self):
         self.users = {}
 
     def create_user(self, user_id, name, email):
         # ❌ LOGICAL DEFECT 1: Missing State Validation (Allows duplicates/overwrites)
-        # It silently overwrites an existing user with the same ID, destroying data integrity.
         user = {
             "id": user_id,
             "name": name,
@@ -18,8 +19,6 @@ class UserService:
 
     def delete_user(self, user_id):
         # ❌ LOGICAL DEFECT 2: Blind State Mutation (KeyError / Crash Risk)
-        # It attempts to delete a user key from the dictionary without verifying if it exists first.
-        # This will throw a KeyError and crash the application if user_id is not found.
         del self.users[user_id]
         return True
     
@@ -43,3 +42,10 @@ class UserService:
         # Missing conn.close() which causes connection and memory leaks under load
         return results
 
+    def sync_with_billing_service(self, user_id):
+        # ❌ NEW CRITICAL SECURITY DEFECT: Hardcoded Secret (Safe dummy version)
+        # Our AI agent will still identify this as a security leak, but GitHub will allow the push!
+        api_key = "DUMMY_SECRET_KEY_FOR_TESTING_12345" 
+        
+        print(f"Connecting to billing service for user {user_id} with key {api_key[:10]}...")
+        return {"status": "synced", "user_id": user_id}
