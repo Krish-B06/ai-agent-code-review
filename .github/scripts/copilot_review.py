@@ -3,6 +3,7 @@ import sys
 import json
 import requests
 
+
 def main():
     token = os.getenv("GITHUB_TOKEN")
     event_path = os.getenv("GITHUB_EVENT_PATH")
@@ -54,11 +55,18 @@ def main():
     }
     copilot_auth_res = requests.get("https://api.github.com/copilot_internal/v2/token", headers=copilot_auth_headers)
     if copilot_auth_res.status_code != 200:
-        print("This repository/organization does not have Copilot enabled for Actions, or the token is unauthorized.")
+        if copilot_auth_res.status_code in {401, 403, 404}:
+            print("Skipping review: Copilot for Actions is unavailable or unauthorized for this repository.")
+            return
+        print(f"Failed to authorize with Copilot token exchange: {copilot_auth_res.status_code} {copilot_auth_res.text}")
         sys.exit(1)
         
     copilot_token_data = copilot_auth_res.json()
     copilot_token = copilot_token_data.get("token")
+    if not copilot_token:
+        print("Copilot token exchange succeeded but no token was returned.")
+        sys.exit(1)
+    base_api_url = copilot_token_data.get("endpoints", {}).get("api", "https://api.githubcopilot.com")
 
     # 5. Call Copilot LLM Engine (GPT-4o API endpoint)
     payload = {
@@ -71,17 +79,12 @@ def main():
     }
     
     llm_headers = {
-        "Authorization": f"Bearer {copilot_token}",
+        "Authorization": "Bearer " + copilot_token,
         "Content-Type": "application/json",
         "User-Agent": "Copilot-PR-Reviewer"
     }
     
-    # We query the official underlying endpoint of the GitHub Copilot API
-    llm_res = requests.post("https://api.githubapi.com/copilot/chat/completions", headers=llm_headers, json=payload)
-    if llm_res.status_code != 200:
-        # Fallback endpoint if API URL routes differently
-        llm_res = requests.post("https://api.github.com/copilot/chat/completions", headers=llm_headers, json=payload)
-        
+    llm_res = requests.post(f"{base_api_url}/chat/completions", headers=llm_headers, json=payload)
     if llm_res.status_code != 200:
         print(f"Error calling Copilot LLM: {llm_res.status_code} {llm_res.text}")
         sys.exit(1)
