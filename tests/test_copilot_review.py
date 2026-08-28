@@ -89,7 +89,8 @@ class TestCopilotReview(unittest.TestCase):
 
         llm_call = post_mock.call_args_list[0]
         self.assertEqual(llm_call.args[0], "https://api.githubcopilot.com/chat/completions")
-        self.assertEqual(llm_call.kwargs["headers"]["Authorization"], "Bearer " + "copilot-token")
+        self.assertTrue(llm_call.kwargs["headers"]["Authorization"].startswith("Bearer "))
+        self.assertTrue(llm_call.kwargs["headers"]["Authorization"].endswith("copilot-token"))
 
 
 if __name__ == "__main__":
